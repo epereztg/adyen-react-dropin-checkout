@@ -101,9 +101,7 @@ const originKeysConfig = {
 
 const getOriginKey = () =>
     httpPost('originKeys', originKeysConfig)
-        .then(response => {
-            console.log('originkeys', response.originKeys);
-
+        .then(response => {            
             if (response.error || !response.originKeys) throw new Error("No originKey available");
             return response.originKeys[Object.keys(response.originKeys)[0]];
         })
@@ -182,9 +180,8 @@ class AdyenDropin extends Component {
                 onSubmit: (state, dropin) => {                    
                     makePayment(state.data)
                         // Your function calling your server to make the /payments request
-                        .then(action => {
-                            //let paymentData = action.paymentData;
-                            //if (state.isValid) { console.log('State is valid. Handle payment...'); dropin.handleAction(action) } else console.log('state is not valid')
+                        .then(action => {                            
+                            if (state.isValid) { console.log('State is valid. Handle payment...'); dropin.handleAction(action) } else console.log('state is not valid')
 
                             // Drop-in handles the action object from the /payments response                                
                             console.log('action', action)
