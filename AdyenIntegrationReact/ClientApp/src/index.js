@@ -1,12 +1,10 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
-//import paymentMethodsMock from "./paymentMethodsMock.json";
 import authorization from "./authorization.json";
 import "./styles.css";
 
 const MERCHANT_ACCOUNT = authorization.merchantAccount
 const CHECKOUT_APIKEY = authorization.checkout_apikey
-
 
 const paymentMethodsConfig = {
     shopperReference: 'Checkout Components sample code test',
@@ -19,10 +17,12 @@ const paymentMethodsConfig = {
     },
     channel: "Web"
 };
+
 const paymentsDefaultConfig = {
     locale: navigator.language,
     merchantAccount: MERCHANT_ACCOUNT,
     reference: "Your order number",
+    countryCode: "NL",
     shopperReference: 'Checkout Components sample code test',
     shopperEmail: "shopperEmail@email.com",
     returnUrl: 'https://www.test-merchant.com',
@@ -43,7 +43,8 @@ const paymentsDefaultConfig = {
         }
     ]
 };
-const httpPost = (endpoint, data) =>    
+
+const httpPost = (endpoint, data) =>
     fetch(`https://cors-anywhere.herokuapp.com/https://checkout-test.adyen.com/v50/${endpoint}`, {
         method: 'POST',
         headers: {
@@ -57,12 +58,11 @@ const httpPost = (endpoint, data) =>
         .then(response => response.json())
     ;
 
-
 // Get all available payment methods from the local server
 const getPaymentMethods = () =>
     httpPost('paymentMethods', paymentMethodsConfig)
         .then(response => {
-            if (response.error) throw 'No paymentMethods available';
+            if (response.error) throw new Error("No paymentMethods available");
 
             return response;
         })
@@ -75,42 +75,40 @@ const makePayment = (paymentMethod, config = {}) => {
 
     return httpPost('payments', paymentRequest)
         .then(response => {
-            if (response.error) throw 'Payment initiation failed';
+            if (response.error) throw new Error("Payment initiation failed");
             return response;
         })
         .catch(console.error);
 };
+
 const makeDetailsCall = (paymentMethod, config = {}) => {
     const paymentsConfig = { ...paymentsDefaultConfig, ...config };
     const paymentRequest = { ...paymentsConfig, ...paymentMethod };
 
     return httpPost('payments/details', paymentRequest)
         .then(response => {
-            if (response.error) throw 'Payment initiation failed';
+            if (response.error) throw new Error("Payment initiation failed");
             return response;
         })
         .catch(console.error);
 };
 
 const originKeysConfig = {
-    //originDomains: [
-    //    'https://www.test-merchant.com'
-    //]
+    originDomains: [
+        'https://localhost:44301'
+    ]
 };
-//const originKey = "pub.v2.8015730310171847.aHR0cDovL2xvY2FsaG9zdDozMDAw.5Ulj_WdrTAWpiSPKDy0ckIXp1LansTYRE8_LdfKAHcU"
-//const getOriginKey = () =>
-//    httpPost('originKeys', originKeysConfig)
-//        .then(response => {          
-//            if (response.error || !response.originKeys) throw 'No originKey available';
-//            return response.originKeys[Object.keys(response.originKeys)[0]];
-//        })
-//        .catch(console.error);
 
-// "pub.v2.8015730310171847.aHR0cHM6Ly93d3cudGVzdC1tZXJjaGFudC5jb20.DRS79f0UVpd-XMyCB8mUOB8hDOGEXpWu8wezeMkgiy8";
+const getOriginKey = () =>
+    httpPost('originKeys', originKeysConfig)
+        .then(response => {
+            console.log('originkeys', response.originKeys);
 
-//const paymentData = '';
+            if (response.error || !response.originKeys) throw new Error("No originKey available");
+            return response.originKeys[Object.keys(response.originKeys)[0]];
+        })
+        .catch(console.error);
 
-const paymentMethodsResponse = '';
 class AdyenDropin extends Component {
     constructor(props) {
         super(props);
@@ -129,7 +127,8 @@ class AdyenDropin extends Component {
             "https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/3.3.0/adyen.js";
         script.async = true;
 
-        script.onload = this.initAdyenCheckout(paymentMethodsResponse); // Wait until the script is loaded before initiating AdyenCheckout
+
+        script.onload = this.initAdyenCheckout(); // Wait until the script is loaded before initiating AdyenCheckout
 
         document.body.appendChild(script);
     }
@@ -137,8 +136,8 @@ class AdyenDropin extends Component {
 
     async initAdyenCheckout() {
         let paymentMethodsResponse = await getPaymentMethods();
-        //let originKey = await getOriginKey();
-        const originKey = "pub.v2.8015730310171847.aHR0cHM6Ly9sb2NhbGhvc3Q6NDQzMDEv.BGZrN5Mfy7zgyTzWSJrUWytXDudaDJa5jbDxu5d5M3M"
+        let originKey = await getOriginKey();
+
         const configuration = {
             locale: "en_US",
             environment: "test",
@@ -151,6 +150,7 @@ class AdyenDropin extends Component {
         };
 
         const checkout = new window.AdyenCheckout(configuration);
+
 
         checkout
             .create("dropin", {
@@ -179,20 +179,17 @@ class AdyenDropin extends Component {
                         name: 'Credit or debit card'
                     }
                 },
-                onSubmit: (state, dropin) => {
-                    //dropin.setStatus("loading");
+                onSubmit: (state, dropin) => {                    
                     makePayment(state.data)
                         // Your function calling your server to make the /payments request
                         .then(action => {
-                            //try {                                
                             //let paymentData = action.paymentData;
-                            //dropin.handleAction(action);
+                            //if (state.isValid) { console.log('State is valid. Handle payment...'); dropin.handleAction(action) } else console.log('state is not valid')
+
                             // Drop-in handles the action object from the /payments response                                
                             console.log('action', action)
                         })
                         .catch(error => {
-                            console.log('Error executing payment', error)
-                            debugger;
                             throw new Error(error);
                         });
                 },
@@ -200,7 +197,7 @@ class AdyenDropin extends Component {
                     makeDetailsCall(state.data)
                         // Your function calling your server to make a /payments/details request
                         .then(action => {
-                            //dropin.handleAction(action);
+                            dropin.handleAction(action);
                             // Drop-in handles the action object from the /payments/details response
                         })
                         .catch(error => {
