@@ -22,10 +22,13 @@ Visual Studio 2019
 Clone this repo
 
 Fill authorization.json file with yout Adyen test account credentials
+
+```
 {
   "merchantAccount": "",
   "checkout_apikey": "" 
 }
+```
 
 ## License
 
