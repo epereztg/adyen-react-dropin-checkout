@@ -1,5 +1,4 @@
 ﻿{
-  "merchantAccount": "Payvision191ECOM",
-  "checkout_apikey": "AQEnhmfuXNWTK0Qc+iSAk30urveSR4UcVMIZtG7iZsMtBZI2SJxW9nraEMFdWw2+5HzctViMSCJMYAc=-lC6QB4CEG37xbuxZ8RMj3peCAG8K/S9GwoKMVA6cZjs=-2jwQFK43L2VV4qWZ",
-  "originkey": "pub.v2.8015730310171847.aHR0cHM6Ly93d3cudGVzdC1tZXJjaGFudC5jb20.DRS79f0UVpd-XMyCB8mUOB8hDOGEXpWu8wezeMkgiy8"
+  "merchantAccount": "",
+  "checkout_apikey": "" 
 }
